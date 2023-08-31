@@ -578,5 +578,27 @@ vector<double> lattice::getPolyakovLoop(int rmax){
 	
 }
 
+vector<double> lattice::getSquareLoop(int rmax){
+	
+	auto impFunc = [&](position n){
+		vector<double> data = {};
+		
+		for(int r = 0; r <= rmax; r++){
+			double sum = 0;
+			for(int mu = 0; mu <4; mu++){
+				for(int nu =0; nu < mu; nu++){
+					sum+=getLoop(n,mu,nu,r,r).trace().real();
+				}
+			}
+			data.push_back(sum/6);
+		}
+		
+		return data;
+	};
+	
+	return measureObservable(impFunc);
+	
+}
+
 
 

@@ -1,11 +1,11 @@
 #!/bin/bash
 nJobs=100
-beta=2.6
-N=20
-T=20
+beta=2.25
+N=8
+T=8
 xiR=1
 hot=0
-nSweeps=1000
+nSweeps=200
 gFixing=1e-7
 
 

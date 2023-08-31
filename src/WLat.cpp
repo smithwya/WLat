@@ -56,7 +56,7 @@ int main(int argc, char ** argv)
 	//get time elapsed for thermalization
 	auto mid = std::chrono::steady_clock::now();
 	
-	for(int i = 0; i <10; i++){
+	for(int i = 0; i <20; i++){
 		lat.update(100);
 		//gauge fix
 		if(gTol!=0){
@@ -65,8 +65,8 @@ int main(int argc, char ** argv)
 		
 		//measure data and save to file
 		//renormalization
-		saveData(dataname+"green",lat.getGreensiteCorrelator(10));
-		saveData(dataname+"poly",lat.getPolyakovLoop(10));
+		saveData(dataname+"greenbake",lat.getGreensiteCorrelator(8));
+		//saveData(dataname+"WRR",lat.getSquareLoop(8));
 		
 	}
 	//save the file
