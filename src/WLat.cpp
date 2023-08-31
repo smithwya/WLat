@@ -39,6 +39,9 @@ int main(int argc, char ** argv)
     string configname = (string)argv[9]+"/run"+to_string(jobnum)+".txt";
     string dataname = (string)argv[10]+"/run"+to_string(jobnum);
     string infoname = (string)argv[10]+"/config.txt";
+    string suffix = argv[11];
+    int nMeasurements = atoi(argv[12]);
+    int sweeps_per_meas = atoi(argv[13]);
 
 	//start the clock
 	auto begin = std::chrono::steady_clock::now();
@@ -56,20 +59,22 @@ int main(int argc, char ** argv)
 	//get time elapsed for thermalization
 	auto mid = std::chrono::steady_clock::now();
 	
-	for(int i = 0; i <10; i++){
-		lat.update(100);
+	
+	//measure data and save to file
+	for(int i = 0; i <nMeasurements; i++){
+		lat.update(sweeps_per_meas);
 		//gauge fix
 		if(gTol!=0){
 			lat.fixCoulombGauge(gTol);
 		}
-		
-		//measure data and save to file
-		//renormalization
-		saveData(dataname+"green",lat.getGreensiteCorrelator(10));
-		saveData(dataname+"poly",lat.getPolyakovLoop(10));
+		saveData(dataname+suffix,lat.getGreensiteCorrelator(N));
+		//saveData(dataname+suffix,lat.getSquareLoop(N));
 		
 	}
-	//save the file
+	
+	
+	
+	//save the configuration
 	lat.writeFile(configname);
 	
 	auto end = std::chrono::steady_clock::now();
@@ -85,7 +90,7 @@ int main(int argc, char ** argv)
 		infofile.open(infoname,std::ios::out);
 		}
 	infofile <<"Thermalized lattice with "<<nSweeps<<" sweeps in"<<std::chrono::duration_cast<std::chrono::minutes>(mid - begin).count() << " min" <<endl;
-	infofile << "Finished 10 measurements separated by 100 sweeps and gauge fixing to dF<"<<gTol<<" in "<<std::chrono::duration_cast<std::chrono::minutes>(end - mid).count() << " min" <<endl;
+	infofile << "Measurement name:"<<suffix<<". Finished "<<nMeasurements<<" measurements separated by "<<sweeps_per_meas<<" sweeps and gauge fixing to dF<"<<gTol<<" in "<<std::chrono::duration_cast<std::chrono::minutes>(end - mid).count() << " min" <<endl;
 	infofile.close();
     return 0;
 }

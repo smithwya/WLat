@@ -48,6 +48,7 @@ public:
 	vector<double> getAverageSSLoop(int rmax, int t);
 	vector<double> getAverageTSLoop(int rmax, int t);
 	vector<double> getPolyakovLoop(int rmax);
+	vector<double> getSquareLoop(int rmax);
 private:
 	int Nc;
 	int N;
