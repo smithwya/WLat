@@ -7,6 +7,10 @@
 # $6 1=hot, 0=cold (continue thermalizing current file or start over)
 # $7 number of sweeps to perform
 # $8 tolerance of gauge-fixing (dF<= tol)
+# $9 suffix (name to add to end of datafiles)
+# $10 number of measurements
+# $11 sweeps between each measurement
+# $12 runtime
 
 #makes the folders for the configs and data
 cd /N/slate/smithwya/"SU(2)"
@@ -24,7 +28,7 @@ make
 for ((i=1; i<= $1; i++))
 do
 #submit to carbonate:
-sbatch submit.script "$i" $2 $3 $4 $5 $6 $7 $8 $configpath $datapath
+sbatch --time=${12} submit.script "$i" $2 $3 $4 $5 $6 $7 $8 $configpath $datapath $9 ${10} ${11}
 
 #for testing: 
 #./bin/WLat "$i" $2 $3 $4 $5 $6 $7 $8 $configpath $datapath
