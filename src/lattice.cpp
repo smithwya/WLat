@@ -62,8 +62,8 @@ lattice::lattice()
 	N = 0;
 	T = 0;
 	beta = 0;
-	xi_R = 0;
-	xi_0 = 0;
+	xi_R = 1;
+	xi_0 = 1;
 }
 
 //constructor for lattice
@@ -74,7 +74,7 @@ lattice::lattice(int nColors, int spatialExtent, int timeExtent, double coupling
 	T = timeExtent;
 	beta = coupling;
 	xi_R = anisotropy;
-	xi_0 = setAnisotropy(xi_R);
+	xi_0 = getBareAnisotropy(xi_R);
 	ColdStart();
 }
 
@@ -98,21 +98,30 @@ int lattice::getNc()
 }
 
 //sets the bare anisotropy from renorm anisotropy using JPAC parameterization
-double lattice::setAnisotropy(double xiR)
+double lattice::getBareAnisotropy(double xiR)
 {
 
 	if (xiR == 1.0) return 1.0;
 
-	double c0 = 0.3398;
-	double c1 = -0.3068;
-	double c2 = -0.0449;
+	if(Nc==2){
+		double c0 = 0.3398;
+		double c1 = -0.3068;
+		double c2 = -0.0449;
 
-	double eta1 = c0 + c1 / xiR + c2 / (pow(xiR, 3));
+		double eta1 = c0 + c1 / xiR + c2 / (pow(xiR, 3));
 
-	double a1 = -1.0238;
-	double a2 = -1.8921;
+		double a1 = -1.0238;
+		double a2 = -1.8921;
 
-	return xiR / (1 + (4.0 / 6.0) * (1 + a1 / beta) / (1 + a2 / beta) * (eta1 / beta));
+		return xiR / (1 + (4.0 / 6.0) * (1 + a1 / beta) / (1 + a2 / beta) * (eta1 / beta));
+	}
+	if(Nc==3){
+		double eta1 = (1.002503 + 0.391*pow(xiR,-1) + 1.47130*pow(xiR,-2) - 0.19231*pow(xiR,-3))/(1 + 0.26287*pow(xiR,-1) + 1.59008*pow(xiR,-2) - 0.18224*pow(xiR,-3));
+		double eta = 1+(1-1/xiR)*(eta1/beta)*((beta-6.0*0.55055)/(beta-0.77810*6.0));
+		return xiR/eta;
+	}
+	
+	return 1.0;
 }
 
 //initializes lattice to identity matrices
@@ -131,36 +140,50 @@ void lattice::ColdStart()
 
 //reads in a lattice configuration from a text file
 void lattice::readFile(string filename) {
-
+	
 	std::fstream infile(filename);
-
-	for (int i = 0; i < T; i++) {
-		for (int j = 0; j < N; j++) {
-			for (int k = 0; k < N; k++) {
-				for (int l = 0; l < N; l++) {
-
-					for (int mu = 0; mu < 4; mu++) {
-
-						comp a, b;
-						infile >> a;
-						infile >> b;
-
-						configuration[i][j][k][l][mu] << a, b, -conj(b), conj(a);
-
-					}
-				}
-
-			}
-
-		}
+		
+	
+	auto func2 = [&](position n, int mu) {
+		comp a, b;
+		infile >> a;
+		infile >> b;
+		MatrixXcd U {{a,b},{-conj(b),conj(a)}};
+		return U;
+	};
+	
+	
+		
+	auto func3 = [&](position n, int mu) {
+		comp a, b, c, d, e, f;
+		infile >> a;
+		infile >> b;
+		infile >> c;
+		infile >> d;
+		infile >> e;
+		infile >> f;
+		MatrixXcd U {{a, b, c}, {d, e, f}, {comp(0, 0), comp(0, 0), comp(0, 0)}};
+		return reunitarizeSU3(U);
+	};
+		
+	
+	if(Nc==2){
+		transformLat(func2);
 	}
+	if(Nc==3){
+		transformLat(func3);
+	}
+	
 	infile.close();
+	return;
 }
 
 //writes a text file for the current config
 void lattice::writeFile(string filename)
 {
 	std::ofstream outfile(filename);
+
+
 
 	for (int i = 0; i < T; i++) {
 		for (int j = 0; j < N; j++) {
@@ -172,8 +195,13 @@ void lattice::writeFile(string filename)
 					for (int mu = 0; mu < 4; mu++) {
 
 						MatrixXcd U = getLink(n, mu, true);
-
-						outfile << U(0, 0) << " " << U(0, 1) << endl;
+						if(Nc==2){
+							outfile << U(0, 0) << " " << U(0, 1) << endl;
+						}
+						if(Nc==3){
+							
+							outfile<< U(0,0) << " " << U(0,1) <<" "<<U(0,2) <<" "<< U(1,0)<<" "<<U(1,1)<<" "<<U(1,2)<<endl;
+						}
 
 					}
 				}
@@ -267,24 +295,24 @@ MatrixXcd lattice::genStaple(position n, int mu)
 }
 
 //generates a new SU(2) U_mu(n) using the heatbath algorithm
-MatrixXcd lattice::genLink(position n, int mu)
+MatrixXcd lattice::genLinkSU2(MatrixXcd A)
 {
 
-	MatrixXcd A = genStaple(n, mu);
-
-	double det = sqrt(A.determinant().real());
+	MatrixXcd Ap = A-A.adjoint() + A.adjoint().trace()*MatrixXcd::Identity(2,2);
+	double q = 0.5*sqrt(Ap.determinant()).real();
+	Ap = Ap/(2*q);
+	double betaprime = beta*q;
+	double det = sqrt(Ap.determinant()).real();
 
 	double r1, r2, r3;
 	double x0, x1, x2, x3;
 	double lambdasq = 0;
 
-	MatrixXcd V = A / det;
-
 	while (true) {
 		r1 = 0.5 + randNum();
 		r2 = 0.5 + randNum();
 		r3 = 0.5 + randNum();
-		lambdasq = (-1 / (2 * det * beta)) * (log(r1) + pow(cos(2 * 3.14159265 * r2), 2) * log(r3));
+		lambdasq = (-1 / (2 *det*betaprime)) * (log(r1) + pow(cos(2 * 3.14159265 * r2), 2) * log(r3));
 		double r = 0.5 + randNum();
 		if (pow(r, 2) <= 1 - lambdasq) break;
 	}
@@ -307,11 +335,44 @@ MatrixXcd lattice::genLink(position n, int mu)
 	MatrixXcd X = MatrixXcd::Zero(Nc, Nc);
 	X << comp(x0, x3), comp(x2, x1), comp(-x2, x1), comp(x0, -x3);
 
-	return reunitarize(X * V.adjoint());
+	return reunitarizeSU2(X * Ap.adjoint());
+}
+
+MatrixXcd lattice::getSubgroup(MatrixXcd U, int i){
+	switch (i){
+		case 1: return MatrixXcd{{U(0,0),U(0,1)},{U(1,0),U(1,1)}};
+		case 2: return MatrixXcd{{U(0,0),U(0,2)},{U(2,0),U(2,2)}};
+		case 3: return MatrixXcd{{U(1,1),U(1,2)},{U(2,1),U(2,2)}};
+		
+	}
+	
+	return MatrixXcd::Identity(2,2);
+}
+
+
+
+//generates a new SU(3) link using SU(2) subgroups
+MatrixXcd lattice::genLinkSU3(position n, int mu){
+	
+	MatrixXcd U = getLink(n,mu,true);
+	
+	MatrixXcd W = U*genStaple(n,mu);
+	MatrixXcd R2 = genLinkSU2(getSubgroup(W,1));
+	MatrixXcd R{{R2(0,0),R2(0,1),0},{R2(1,0),R2(1,1),0},{0,0,1}};
+	
+	W = R*W;
+	MatrixXcd S2 = genLinkSU2(getSubgroup(W,2));
+	MatrixXcd S{{S2(0,0),0,S2(0,1)},{0,1,0},{S2(1,0),0,S2(1,1)}};
+	
+	W = S*W;
+	MatrixXcd T2 = genLinkSU2(getSubgroup(W,3));
+	MatrixXcd T{{1,0,0},{0,T2(0,0),T2(0,1)},{0,T2(1,0),T2(1,1)}};
+	
+	return reunitarizeSU3(T*S*R*U);
 }
 
 //reunitarizes SU(2) matrix
-MatrixXcd lattice::reunitarize(MatrixXcd U)
+MatrixXcd lattice::reunitarizeSU2(MatrixXcd U)
 {
 	MatrixXcd newU = MatrixXcd::Zero(Nc, Nc);
 	comp x = sqrt(U(0,0)*conj(U(0,0))+U(0,1)*conj(U(0,1)));
@@ -319,20 +380,48 @@ MatrixXcd lattice::reunitarize(MatrixXcd U)
 	newU << U(0, 0), U(0, 1), -conj(U(0, 1)), conj(U(0, 0));
 	return newU/x;
 }
+//reunitarizes SU(3) matrix
+MatrixXcd lattice::reunitarizeSU3(MatrixXcd U)
+{
+	Eigen::Vector3cd u(U(0,0),U(0,1),U(0,2));
+	u=u/sqrt(u.dot(u));
+	
+	Eigen::Vector3cd v(U(1,0),U(1,1),U(1,2));
+	v=v-u*(v.dot(u.conjugate()));
+	
+	Eigen::Vector3cd w = (u.conjugate()).cross(v.conjugate());
+	
+	MatrixXcd Up = MatrixXcd::Identity(3,3);
+	Up.row(0) = u;
+	Up.row(1) = v;
+	Up.row(2) = w;
+	return Up;
+}
 
 //thermalizes the lattice by performing numUpdates sweeps of the heatbath algorithm
 void lattice::update(int numUpdates)
 {
-
-	auto func = [&](position n, int mu) {
-		return genLink(n, mu);
-	};
-
+	
+	
+	auto func2 = [&](position n, int mu) {
+			MatrixXcd A = genStaple(n, mu);
+			return genLinkSU2(A);
+		};
+		
+	auto func3 = [&](position n, int mu) {
+			return genLinkSU3(n,mu);
+		};
+		
 
 	for (int i = 0; i < numUpdates; i++) {
-		transformLat(func);
+		if(Nc==2){
+			transformLat(func2);
+		}
+		if(Nc==3){
+			transformLat(func3);
+		}
 	}
-
+	
 	return;
 }
 
@@ -355,7 +444,7 @@ MatrixXcd lattice::matrixPow(MatrixXcd G, double omega, int cutoff) {
 		Gw = Gw+c*temp;
 	}
 
-	return reunitarize(Gw);
+	return reunitarizeSU2(Gw);
 }
 
 
@@ -458,7 +547,7 @@ vector<double> lattice::getGreensiteCorrelator(int rmax){
 		for(int r = 0; r <= rmax; r++){
 			double sum = 0;
 			for(int mu = 1; mu <4; mu++){
-				sum+=getCoulombLoop(n,mu,r,1).trace().real();
+				sum+=getCoulombLoop(n,mu,r,1).trace().real()/Nc;
 			}
 			data.push_back(sum/3);
 		}

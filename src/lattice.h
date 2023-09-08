@@ -27,7 +27,7 @@ public:
 	double getAnisotropy();
 	double getBeta();
 	int getNc();
-	double setAnisotropy(double xiR);
+	double getBareAnisotropy(double xiR);
 	void ColdStart();
 	void readFile(string filename);
 	void writeFile(string filename);
@@ -59,8 +59,11 @@ private:
 	vector<vector<vector<vector<vector<MatrixXcd>>>>> configuration;
 	void transformLat(function<MatrixXcd(position,int)>);
 	MatrixXcd genStaple(position n, int mu);
-	MatrixXcd genLink(position n, int mu);
-	MatrixXcd reunitarize(MatrixXcd U);
+	MatrixXcd genLinkSU2(MatrixXcd A);
+	MatrixXcd genLinkSU3(position n, int mu);
+	MatrixXcd reunitarizeSU2(MatrixXcd U);
+	MatrixXcd reunitarizeSU3(MatrixXcd U);
+	MatrixXcd getSubgroup(MatrixXcd U, int i);
 	double randNum();
 
 };

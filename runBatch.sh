@@ -11,13 +11,14 @@
 # $10 number of measurements
 # $11 sweeps between each measurement
 # $12 runtime
+# $13 filepath
 
 #makes the folders for the configs and data
-cd /N/slate/smithwya/"SU(2)"
+cd ${13}
 mkdir -p ./Configs/"$3"^3x"$4"/$2-$5
 mkdir -p ./Data/"$3"^3x"$4"/$2-$5
-configpath=/N/slate/smithwya/"SU(2)"/Configs/"$3"^3x"$4"/$2-$5
-datapath=/N/slate/smithwya/"SU(2)"/Data/"$3"^3x"$4"/$2-$5
+configpath="${13}"/Configs/"$3"^3x"$4"/$2-$5
+datapath="${13}"/Data/"$3"^3x"$4"/$2-$5
 
 cd -
 
