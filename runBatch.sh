@@ -22,9 +22,6 @@ datapath="${13}"/Data/"$3"^3x"$4"/$2-$5
 
 cd -
 
-#compiles code
-make
-
 #submits jobs
 for ((i=1; i<= $1; i++))
 do
