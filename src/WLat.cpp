@@ -69,6 +69,9 @@ int main(int argc, char ** argv)
 		}
 		saveData(dataname+suffix,lat.getGreensiteCorrelator(N));
 		//saveData(dataname+suffix,lat.getSquareLoop(N));
+		//saveData(dataname+suffix,lat.getImprovedCorrelator(N,1));
+		//saveData(dataname+suffix,lat.getImprovedCorrelator(N,2));
+		//saveData(dataname+suffix,lat.getImprovedCorrelator(N,3));
 		
 	}
 	

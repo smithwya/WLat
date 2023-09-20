@@ -300,24 +300,35 @@ MatrixXcd lattice::genLinkSU2(MatrixXcd A)
 
 	MatrixXcd Ap = A-A.adjoint() + A.adjoint().trace()*MatrixXcd::Identity(2,2);
 	double q = 0.5*sqrt(Ap.determinant()).real();
-	Ap = Ap/(2*q);
-	double betaprime = beta*q;
-	double det = sqrt(Ap.determinant()).real();
+	Ap = Ap/(2.0*q);
+	double betaprime = beta*q/Nc;
+	double alpha = 2*betaprime;
 
-	double r1, r2, r3;
-	double x0, x1, x2, x3;
-	double lambdasq = 0;
+	double R, Rp, Rpp, Rppp;
+	double X, Xp, B, C;
+	double deltabar;
 
 	while (true) {
-		r1 = 0.5 + randNum();
-		r2 = 0.5 + randNum();
-		r3 = 0.5 + randNum();
-		lambdasq = (-1 / (2 *det*betaprime)) * (log(r1) + pow(cos(2 * 3.14159265 * r2), 2) * log(r3));
-		double r = 0.5 + randNum();
-		if (pow(r, 2) <= 1 - lambdasq) break;
+		R = 0.5 + randNum();
+		Rp = 0.5 + randNum();
+		
+		X = -(log(R)/alpha);
+		Xp =-(log(Rp)/alpha); 
+		
+		Rpp = 0.5 + randNum();
+		C=pow(cos(2*3.14159265*Rpp),2);
+		
+		B = X*C;
+		
+		deltabar = Xp + B;
+		
+		Rppp = 0.5+randNum();
+		
+		if(pow(Rppp,2)<= 1-0.5*deltabar) break;
 	}
-	x0 = 1 - 2 * lambdasq;
-
+	double x0 = 1-deltabar;
+	
+	double r1, r2, r3;
 	while (true) {
 		r1 = 2 * randNum();
 		r2 = 2 * randNum();
@@ -328,14 +339,14 @@ MatrixXcd lattice::genLinkSU2(MatrixXcd A)
 	double length = sqrt(pow(r1, 2) + pow(r2, 2) + pow(r3, 2));
 	double norm = sqrt(1 - pow(x0, 2));
 
-	x1 = r1 * norm / length;
-	x2 = r2 * norm / length;
-	x3 = r3 * norm / length;
+	double x1 = r1 * norm / length;
+	double x2 = r2 * norm / length;
+	double x3 = r3 * norm / length;
 
-	MatrixXcd X = MatrixXcd::Zero(Nc, Nc);
-	X << comp(x0, x3), comp(x2, x1), comp(-x2, x1), comp(x0, -x3);
+	MatrixXcd U = MatrixXcd::Zero(Nc, Nc);
+	U << comp(x0, x3), comp(x2, x1), comp(-x2, x1), comp(x0, -x3);
 
-	return reunitarizeSU2(X * Ap.adjoint());
+	return reunitarizeSU2(U * Ap.adjoint());
 }
 
 MatrixXcd lattice::getSubgroup(MatrixXcd U, int i){
