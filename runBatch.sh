@@ -12,6 +12,7 @@
 # $11 sweeps between each measurement
 # $12 runtime
 # $13 filepath
+# $14 Nc
 
 #makes the folders for the configs and data
 cd ${13}
@@ -26,8 +27,8 @@ cd -
 for ((i=1; i<= $1; i++))
 do
 #submit to carbonate:
-sbatch --time=${12} submit.script "$i" $2 $3 $4 $5 $6 $7 $8 $configpath $datapath $9 ${10} ${11}
+sbatch --time=${12} submit.script "$i" $2 $3 $4 $5 $6 $7 $8 $configpath $datapath $9 ${10} ${11} ${14}
 
-#for testing: 
-#./bin/WLat "$i" $2 $3 $4 $5 $6 $7 $8 $configpath $datapath
+#for testing
+#./bin/WLat "$i" $2 $3 $4 $5 $6 $7 $8 $configpath $datapath $9 ${10} ${11} ${14}
 done

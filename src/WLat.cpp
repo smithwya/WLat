@@ -23,9 +23,7 @@ void saveData(string dataname, vector<double> v) {
 
 int main(int argc, char ** argv)
 {
-	//code only works for SU(2) currently
-    int Nc = 2;
-    
+
     //takes in arguments from command line
     int jobnum = atoi(argv[1]);
     double beta = atof(argv[2]);
@@ -42,20 +40,27 @@ int main(int argc, char ** argv)
     string suffix = argv[11];
     int nMeasurements = atoi(argv[12]);
     int sweeps_per_meas = atoi(argv[13]);
+	int Nc = atoi(argv[14]);
 
 	//start the clock
 	auto begin = std::chrono::steady_clock::now();
 
+
+for(double b = 2.0; b<=8.0; b+=0.1){
 	//make lattice object
-	lattice lat = lattice(Nc,N,T,beta,xi_R);
+	lattice lat = lattice(Nc,N,T,b,xi_R);
 	
 	//read in previously saved config
 	if(hotStart==1){
 		lat.readFile(configname);
 	}
 	
-	
+
 	lat.update(nSweeps);
+	cout<<b<<" "<<lat.getAvgPlaq()<<endl;
+}
+
+return 0;
 	//get time elapsed for thermalization
 	auto mid = std::chrono::steady_clock::now();
 	

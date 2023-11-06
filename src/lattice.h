@@ -35,6 +35,7 @@ public:
 	void update(int numUpdates);
 	MatrixXcd matrixPow(MatrixXcd G, double omega, int cutoff);
 	void fixCoulombGauge(double tolerance);
+	void fixCoulombGaugeSubgroups(double tolerance);
 	double checkCoulombGauge();
 	vector<double> measureObservable(function<vector<double>(position)> func);
 	double getAvgPlaq();
@@ -64,6 +65,7 @@ private:
 	MatrixXcd reunitarizeSU2(MatrixXcd U);
 	MatrixXcd reunitarizeSU3(MatrixXcd U);
 	MatrixXcd getSubgroup(MatrixXcd U, int i);
+	MatrixXcd SU3mat(MatrixXcd U,int i);
 	double randNum();
 
 };

@@ -342,8 +342,9 @@ MatrixXcd lattice::genLinkSU2(MatrixXcd A)
 	double x1 = r1 * norm / length;
 	double x2 = r2 * norm / length;
 	double x3 = r3 * norm / length;
+	
 
-	MatrixXcd U = MatrixXcd::Zero(Nc, Nc);
+	MatrixXcd U = MatrixXcd::Zero(2, 2);
 	U << comp(x0, x3), comp(x2, x1), comp(-x2, x1), comp(x0, -x3);
 
 	return reunitarizeSU2(U * Ap.adjoint());
@@ -360,15 +361,26 @@ MatrixXcd lattice::getSubgroup(MatrixXcd U, int i){
 	return MatrixXcd::Identity(2,2);
 }
 
+MatrixXcd lattice::SU3mat(MatrixXcd U, int i){
+	switch(i){
+		case 1: return MatrixXcd{{U(0,0),U(0,1),0},{U(1,0),U(1,1),0},{0,0,1}};
+		case 2: return MatrixXcd{{U(0,0),0,U(0,1)},{0,1,0},{U(1,0),0,U(1,1)}};
+		case 3: return MatrixXcd{{1,0,0},{0,U(0,0),U(0,1)},{0,U(1,0),U(1,1)}};
+	}
+	
+	return MatrixXcd::Identity(3,3);
+}
 
 
 //generates a new SU(3) link using SU(2) subgroups
 MatrixXcd lattice::genLinkSU3(position n, int mu){
 	
 	MatrixXcd U = getLink(n,mu,true);
-	
+
 	MatrixXcd W = U*genStaple(n,mu);
+	
 	MatrixXcd R2 = genLinkSU2(getSubgroup(W,1));
+	
 	MatrixXcd R{{R2(0,0),R2(0,1),0},{R2(1,0),R2(1,1),0},{0,0,1}};
 	
 	W = R*W;
@@ -385,7 +397,7 @@ MatrixXcd lattice::genLinkSU3(position n, int mu){
 //reunitarizes SU(2) matrix
 MatrixXcd lattice::reunitarizeSU2(MatrixXcd U)
 {
-	MatrixXcd newU = MatrixXcd::Zero(Nc, Nc);
+	MatrixXcd newU = MatrixXcd::Zero(2, 2);
 	comp x = sqrt(U(0,0)*conj(U(0,0))+U(0,1)*conj(U(0,1)));
 	
 	newU << U(0, 0), U(0, 1), -conj(U(0, 1)), conj(U(0, 0));
@@ -412,7 +424,7 @@ MatrixXcd lattice::reunitarizeSU3(MatrixXcd U)
 //thermalizes the lattice by performing numUpdates sweeps of the heatbath algorithm
 void lattice::update(int numUpdates)
 {
-	
+
 	
 	auto func2 = [&](position n, int mu) {
 			MatrixXcd A = genStaple(n, mu);
@@ -519,6 +531,54 @@ void lattice::fixCoulombGauge(double tolerance) {
 	}
 	return;
 }
+
+//fixes the coulomb gauge up to tolerance dF<=tolerance
+void lattice::fixCoulombGaugeSubgroups(double tolerance) {
+	double omega = 1.75;
+
+	auto gsweep = [&](position n) {
+		MatrixXcd K = MatrixXcd::Zero(Nc, Nc);
+		//for each of the 3 su2 subgroups
+		for(int s =1; s<=3; s++){
+			//construct K for the subgrp (1-3 = Coulombg, 0-3 = Landau)
+			for (int dir = 1; dir < 4; dir++) {
+				K += getSubgroup(getLink(n,dir,true),s);
+				K += getSubgroup(getLink(shift(n, dir, -1), dir, true).adjoint(),s);
+			}
+
+			MatrixXcd G = K.adjoint();
+			comp a = G.determinant();
+			G = G / sqrt(a);
+
+			//overrelaxation by replacing gauge transf g with g^omega
+			G = matrixPow(G, omega, 2);
+			MatrixXcd G3 = SU3mat(G,s);
+			
+			for (int mu = 0; mu < 4; mu++) {
+				configuration[n.t][n.x][n.y][n.z][mu] = G3 * getLink(n, mu, true);
+
+				position m = shift(n, mu, -1);
+				configuration[m.t][m.x][m.y][m.z][mu] = getLink(m, mu, true) * (G3.adjoint());
+			}
+		}
+		vector<double> count = {1.0};
+		return count;
+	};
+	
+	int nsweeps = 0;
+	double last = 0;
+	double current = checkCoulombGauge();
+	
+	while(true){
+		last = current;
+		nsweeps += measureObservable(gsweep)[0];
+		current = checkCoulombGauge();
+
+		if(abs(current-last)<=tolerance) break;
+	}
+	return;
+}
+
 
 
 
