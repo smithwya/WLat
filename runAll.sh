@@ -1,12 +1,12 @@
 #!/bin/bash
-nJobs=100
+nJobs=1
 beta=6.0
 Nc=3
-N=24
-T=24
+N=12
+T=12
 xiR=1
 hot=0
-nSweeps=300
+nSweeps=30
 gFixing=0
 suffix=green
 measurements=0

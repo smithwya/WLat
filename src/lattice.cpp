@@ -407,13 +407,15 @@ MatrixXcd lattice::reunitarizeSU2(MatrixXcd U)
 MatrixXcd lattice::reunitarizeSU3(MatrixXcd U)
 {
 	Eigen::Vector3cd u(U(0,0),U(0,1),U(0,2));
+
 	u=u/sqrt(u.dot(u));
+
 	
 	Eigen::Vector3cd v(U(1,0),U(1,1),U(1,2));
-	v=v-u*(v.dot(u.conjugate()));
-	
+	v=v-(u.adjoint()*v)*u;
+	v=v/sqrt(v.dot(v));
+
 	Eigen::Vector3cd w = (u.conjugate()).cross(v.conjugate());
-	
 	MatrixXcd Up = MatrixXcd::Identity(3,3);
 	Up.row(0) = u;
 	Up.row(1) = v;
