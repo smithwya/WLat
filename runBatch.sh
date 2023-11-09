@@ -27,8 +27,8 @@ cd -
 for ((i=1; i<= $1; i++))
 do
 #submit to carbonate:
-#sbatch --time=${12} submit.script "$i" $2 $3 $4 $5 $6 $7 $8 $configpath $datapath $9 ${10} ${11} ${14}
+sbatch --time=${12} submit.script "$i" $2 $3 $4 $5 $6 $7 $8 $configpath $datapath $9 ${10} ${11} ${14}
 
 #for testing
-./bin/WLat "$i" $2 $3 $4 $5 $6 $7 $8 $configpath $datapath $9 ${10} ${11} ${14}
+#./bin/WLat "$i" $2 $3 $4 $5 $6 $7 $8 $configpath $datapath $9 ${10} ${11} ${14}
 done

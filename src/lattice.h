@@ -50,6 +50,7 @@ public:
 	vector<double> getAverageTSLoop(int rmax, int t);
 	vector<double> getPolyakovLoop(int rmax);
 	vector<double> getSquareLoop(int rmax);
+	vector<double> getAverageWilsonLoop(int rmax, int t);
 
 private:
 	int Nc;
@@ -63,10 +64,11 @@ private:
 	MatrixXcd genStaple(position n, int mu);
 	MatrixXcd genLinkSU2(MatrixXcd A);
 	MatrixXcd genLinkSU3(position n, int mu);
-	MatrixXcd reunitarizeSU2(MatrixXcd U);
-	MatrixXcd reunitarizeSU3(MatrixXcd U);
 	MatrixXcd getSubgroup(MatrixXcd U, int i);
 	MatrixXcd SU3mat(MatrixXcd U,int i);
+	MatrixXcd reunitarizeSU2(MatrixXcd U);
+	MatrixXcd reunitarizeSU3(MatrixXcd U);
+
 	double randNum();
 
 };

@@ -116,6 +116,7 @@ double lattice::getBareAnisotropy(double xiR)
 		return xiR / (1 + (4.0 / 6.0) * (1 + a1 / beta) / (1 + a2 / beta) * (eta1 / beta));
 	}
 	if(Nc==3){
+		//Klassen parameterization
 		double eta1 = (1.002503 + 0.391*pow(xiR,-1) + 1.47130*pow(xiR,-2) - 0.19231*pow(xiR,-3))/(1 + 0.26287*pow(xiR,-1) + 1.59008*pow(xiR,-2) - 0.18224*pow(xiR,-3));
 		double eta = 1+(1-1/xiR)*(eta1/beta)*((beta-6.0*0.55055)/(beta-0.77810*6.0));
 		return xiR/eta;
@@ -298,11 +299,12 @@ MatrixXcd lattice::genStaple(position n, int mu)
 MatrixXcd lattice::genLinkSU2(MatrixXcd A)
 {
 
-	MatrixXcd Ap = A-A.adjoint() + A.adjoint().trace()*MatrixXcd::Identity(2,2);
+	MatrixXcd Ap = A-A.adjoint() + (A.adjoint().trace())*MatrixXcd::Identity(2,2);
 	double q = 0.5*sqrt(Ap.determinant()).real();
 	Ap = Ap/(2.0*q);
 	double betaprime = beta*q/Nc;
 	double alpha = 2*betaprime;
+
 
 	double R, Rp, Rpp, Rppp;
 	double X, Xp, B, C;
@@ -344,10 +346,9 @@ MatrixXcd lattice::genLinkSU2(MatrixXcd A)
 	double x3 = r3 * norm / length;
 	
 
-	MatrixXcd U = MatrixXcd::Zero(2, 2);
-	U << comp(x0, x3), comp(x2, x1), comp(-x2, x1), comp(x0, -x3);
+	MatrixXcd U{{comp(x0, x3), comp(x2, x1)},{comp(-x2, x1), comp(x0, -x3)}};
 
-	return reunitarizeSU2(U * Ap.adjoint());
+	return reunitarizeSU2(U * (Ap.adjoint()));
 }
 
 MatrixXcd lattice::getSubgroup(MatrixXcd U, int i){
@@ -381,15 +382,15 @@ MatrixXcd lattice::genLinkSU3(position n, int mu){
 	
 	MatrixXcd R2 = genLinkSU2(getSubgroup(W,1));
 	
-	MatrixXcd R{{R2(0,0),R2(0,1),0},{R2(1,0),R2(1,1),0},{0,0,1}};
+	MatrixXcd R = SU3mat(R2,1);
 	
 	W = R*W;
 	MatrixXcd S2 = genLinkSU2(getSubgroup(W,2));
-	MatrixXcd S{{S2(0,0),0,S2(0,1)},{0,1,0},{S2(1,0),0,S2(1,1)}};
+	MatrixXcd S = SU3mat(S2,2);
 	
 	W = S*W;
 	MatrixXcd T2 = genLinkSU2(getSubgroup(W,3));
-	MatrixXcd T{{1,0,0},{0,T2(0,0),T2(0,1)},{0,T2(1,0),T2(1,1)}};
+	MatrixXcd T = SU3mat(T2,3);
 	
 	return reunitarizeSU3(T*S*R*U);
 }
@@ -419,7 +420,7 @@ MatrixXcd lattice::reunitarizeSU3(MatrixXcd U)
 	MatrixXcd Up = MatrixXcd::Identity(3,3);
 	Up.row(0) = u;
 	Up.row(1) = v;
-	Up.row(2) = w;
+	Up.row(2) = w.conjugate();
 	return Up;
 }
 
@@ -427,7 +428,7 @@ MatrixXcd lattice::reunitarizeSU3(MatrixXcd U)
 void lattice::update(int numUpdates)
 {
 
-	
+
 	auto func2 = [&](position n, int mu) {
 			MatrixXcd A = genStaple(n, mu);
 			return genLinkSU2(A);
@@ -441,9 +442,12 @@ void lattice::update(int numUpdates)
 	for (int i = 0; i < numUpdates; i++) {
 		if(Nc==2){
 			transformLat(func2);
+
+			
 		}
 		if(Nc==3){
 			transformLat(func3);
+
 		}
 	}
 	
@@ -452,13 +456,14 @@ void lattice::update(int numUpdates)
 
 //returns the omega'th power of matrix G, up to cutoff terms in a series
 MatrixXcd lattice::matrixPow(MatrixXcd G, double omega, int cutoff) {
+	int dim = G.rows();
 
-	MatrixXcd Gw = MatrixXcd::Zero(Nc,Nc);
-	MatrixXcd GminusI = G-MatrixXcd::Identity(Nc,Nc);
+	MatrixXcd Gw = MatrixXcd::Zero(dim,dim);
+	MatrixXcd GminusI = G-MatrixXcd::Identity(dim,dim);
 
 	for (int i = 0; i <= cutoff; i++) {
 
-		MatrixXcd temp = MatrixXcd::Identity(Nc, Nc);
+		MatrixXcd temp = MatrixXcd::Identity(dim, dim);
 
 		for (int j = 1; j <= i; j++) {
 			temp = GminusI*temp;
@@ -468,8 +473,8 @@ MatrixXcd lattice::matrixPow(MatrixXcd G, double omega, int cutoff) {
 
 		Gw = Gw+c*temp;
 	}
-
-	return reunitarizeSU2(Gw);
+	if(dim==2) return reunitarizeSU2(Gw);
+	return reunitarizeSU3(Gw);
 }
 
 
@@ -510,6 +515,7 @@ void lattice::fixCoulombGauge(double tolerance) {
 		//overrelaxation by replacing gauge transf g with g^omega
 		G = matrixPow(G, omega, 2);
 
+
 		for (int mu = 0; mu < 4; mu++) {
 			configuration[n.t][n.x][n.y][n.z][mu] = G * getLink(n, mu, true);
 
@@ -523,7 +529,7 @@ void lattice::fixCoulombGauge(double tolerance) {
 	int nsweeps = 0;
 	double last = 0;
 	double current = checkCoulombGauge();
-	
+
 	while(true){
 		last = current;
 		nsweeps += measureObservable(gsweep)[0];
@@ -537,30 +543,31 @@ void lattice::fixCoulombGauge(double tolerance) {
 //fixes the coulomb gauge up to tolerance dF<=tolerance
 void lattice::fixCoulombGaugeSubgroups(double tolerance) {
 	double omega = 1.75;
-
+	
 	auto gsweep = [&](position n) {
-		MatrixXcd K = MatrixXcd::Zero(Nc, Nc);
+
 		//for each of the 3 su2 subgroups
 		for(int s =1; s<=3; s++){
+			MatrixXcd K = MatrixXcd::Zero(2, 2);
 			//construct K for the subgrp (1-3 = Coulombg, 0-3 = Landau)
 			for (int dir = 1; dir < 4; dir++) {
 				K += getSubgroup(getLink(n,dir,true),s);
 				K += getSubgroup(getLink(shift(n, dir, -1), dir, true).adjoint(),s);
 			}
-
 			MatrixXcd G = K.adjoint();
 			comp a = G.determinant();
 			G = G / sqrt(a);
-
 			//overrelaxation by replacing gauge transf g with g^omega
 			G = matrixPow(G, omega, 2);
+			
 			MatrixXcd G3 = SU3mat(G,s);
 			
+			
 			for (int mu = 0; mu < 4; mu++) {
-				configuration[n.t][n.x][n.y][n.z][mu] = G3 * getLink(n, mu, true);
+				configuration[n.t][n.x][n.y][n.z][mu] = reunitarizeSU3(G3 * getLink(n, mu, true));
 
 				position m = shift(n, mu, -1);
-				configuration[m.t][m.x][m.y][m.z][mu] = getLink(m, mu, true) * (G3.adjoint());
+				configuration[m.t][m.x][m.y][m.z][mu] = reunitarizeSU3(getLink(m, mu, true) * (G3.adjoint()));
 			}
 		}
 		vector<double> count = {1.0};
@@ -570,7 +577,7 @@ void lattice::fixCoulombGaugeSubgroups(double tolerance) {
 	int nsweeps = 0;
 	double last = 0;
 	double current = checkCoulombGauge();
-	
+
 	while(true){
 		last = current;
 		nsweeps += measureObservable(gsweep)[0];
@@ -709,7 +716,7 @@ double lattice::getAvgPlaq() {
 		}
 		
 		vector<double> v = {};
-		v.push_back(P.trace().real() / 6.0);
+		v.push_back(P.trace().real() / (6.0*Nc));
 		return v;
 	};
 	
@@ -762,5 +769,26 @@ vector<double> lattice::getSquareLoop(int rmax){
 	
 }
 
-
+vector<double> lattice::getAverageWilsonLoop(int rmax, int t){
+	
+	auto impFunc = [&](position n){
+		vector<double> data = {};
+		
+		for(int r = 1; r <= rmax; r++){
+			double sum = 0;
+			
+			for(int mu = 0; mu <4; mu++){
+				for(int nu=0; nu<mu; nu++){
+					sum+=getLoop(n,mu,nu,r,t).trace().real();
+				}
+			}
+			data.push_back(sum/(Nc*6));
+		}
+		
+		return data;
+	};
+	
+	return measureObservable(impFunc);
+	
+}
 
