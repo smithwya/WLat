@@ -55,6 +55,8 @@ int main(int argc, char ** argv)
 		lat.readFile(configname);
 	}
 
+	lat.update(nSweeps);
+	
 	//get time elapsed for thermalization
 	auto mid = std::chrono::steady_clock::now();
 	
