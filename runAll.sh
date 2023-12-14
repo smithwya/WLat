@@ -6,12 +6,12 @@ N=24
 T=96
 xiR=5
 hot=1
-nSweeps=500
-gFixing=1e-7
-suffix=GRT
-measurements=0
+nSweeps=0
+gFixing=0
+suffix=WSS
+measurements=1
 sweeps_between_meas=50
-runtime=24:00:00
+runtime=5:00:00
 filepath=/N/slate/smithwya/"SU(3)"
 #makes 'Configs' and 'Data' folders in filepath location
 

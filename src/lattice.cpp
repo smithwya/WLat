@@ -782,7 +782,7 @@ vector<double> lattice::getAverageWilsonLoop(int rmax, int t){
 					sum+=getLoop(n,mu,nu,r,t).trace().real();
 				}
 			}
-			data.push_back(sum/(Nc*6));
+			data.push_back(sum/6);
 		}
 		
 		return data;
