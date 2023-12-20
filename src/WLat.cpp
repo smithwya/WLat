@@ -66,7 +66,12 @@ int main(int argc, char ** argv)
 		lat.update(sweeps_per_meas);
 			//gauge fix
 		if(gTol!=0){
-			lat.fixCoulombGaugeSubgroups(gTol);
+			if(Nc==3){
+				lat.fixCoulombGaugeSubgroups(gTol);
+			}
+			if(Nc==2){
+				lat.fixCoulombGauge(gTol);
+			}
 		}
 		//saveData(dataname+suffix,lat.getGreensiteCorrelator(N));
 		//saveData(dataname+suffix,lat.getSquareLoop(N));
