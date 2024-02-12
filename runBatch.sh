@@ -30,5 +30,5 @@ do
 sbatch --time=${12} submit.script "$i" $2 $3 $4 $5 $6 $7 $8 $configpath $datapath $9 ${10} ${11} ${14}
 
 #for testing
-#./bin/WLat "$i" $2 $3 $4 $5 $6 $7 $8 $configpath $datapath $9 ${10} ${11} ${14}
+#./bin/WLat $9 $2 $3 $4 $5 $6 $7 $8 $configpath $datapath $9 ${10} ${11} ${14}
 done

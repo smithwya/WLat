@@ -54,9 +54,7 @@ int main(int argc, char ** argv)
 	if(hotStart==1){
 		lat.readFile(configname);
 	}
-
 	lat.update(nSweeps);
-	
 	//get time elapsed for thermalization
 	auto mid = std::chrono::steady_clock::now();
 	
@@ -76,11 +74,10 @@ int main(int argc, char ** argv)
 		//saveData(dataname+suffix,lat.getGreensiteCorrelator(N));
 		//saveData(dataname+suffix,lat.getSquareLoop(N));
 		for(int j = 1; j <=N/2; j++){ 
-			//saveData(dataname+suffix,lat.getImprovedCorrelator(N/2,j));
-			saveData(dataname+suffix,lat.getAverageTSLoop(N/2,j));
+			//saveData(dataname+suffix,lat.getAverageTSLoop(N/2,j));
+			saveData(dataname+suffix,lat.getImprovedCorrelator(N/2,j));
 		}
 	}
-	
 	
 	//save the configuration
 	lat.writeFile(configname);
