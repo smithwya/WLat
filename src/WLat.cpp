@@ -73,9 +73,9 @@ int main(int argc, char ** argv)
 		}
 		//saveData(dataname+suffix,lat.getGreensiteCorrelator(N));
 		//saveData(dataname+suffix,lat.getSquareLoop(N));
-		for(int j = 1; j <=N/2; j++){ 
-			//saveData(dataname+suffix,lat.getAverageTSLoop(N/2,j));
-			saveData(dataname+suffix,lat.getImprovedCorrelator(N/2,j));
+		for(int j = 1; j <=T/2; j++){ 
+			saveData(dataname+suffix,lat.getAverageTSLoop(N/2,xi_R*j));
+			//saveData(dataname+suffix,lat.getImprovedCorrelator(N/2,j));
 		}
 	}
 	
