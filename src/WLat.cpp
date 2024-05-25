@@ -36,7 +36,7 @@ int main(int argc, char ** argv)
     double gTol = atof(argv[8]);
     string configname = (string)argv[9]+"/run"+to_string(jobnum)+".txt";
     string dataname = (string)argv[10]+"/run"+to_string(jobnum);
-    string infoname = (string)argv[10]+"/config.txt";
+    string infoname = (string)argv[9]+"/config.txt";
     string suffix = argv[11];
     int nMeasurements = atoi(argv[12]);
     int sweeps_per_meas = atoi(argv[13]);
