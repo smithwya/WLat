@@ -3,7 +3,7 @@ TARGET = WLat
 CXX = g++
 
 #compiling flags
-CPPFLAGS := $(STDINCDIR)
+CPPFLAGS := $(STDINCDIR) -I/N/u/smithwya/BigRed200/eigen
 CPPFLAGS += -O3
 CPPFLAGS += -mtune=native
 CPPFLAGS += -march=native

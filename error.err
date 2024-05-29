@@ -1,0 +1,18 @@
+slurmstepd: error: Detected 1 oom-kill event(s) in StepId=3198279.0. Some of your processes may have been killed by the cgroup out-of-memory handler.
+srun: error: nid0127: task 0: Out Of Memory
+srun: launch/slurm: _step_signal: Terminating StepId=3198279.0
+slurmstepd: error: Detected 1 oom-kill event(s) in StepId=3198280.0. Some of your processes may have been killed by the cgroup out-of-memory handler.
+srun: error: nid0127: task 0: Out Of Memory
+srun: launch/slurm: _step_signal: Terminating StepId=3198280.0
+slurmstepd: error: Detected 1 oom-kill event(s) in StepId=3198287.0. Some of your processes may have been killed by the cgroup out-of-memory handler.
+slurmstepd: error: Detected 1 oom-kill event(s) in StepId=3198283.0. Some of your processes may have been killed by the cgroup out-of-memory handler.
+srun: error: nid0157: task 0: Out Of Memory
+srun: error: nid0157: task 0: Out Of Memory
+srun: launch/slurm: _step_signal: Terminating StepId=3198287.0
+srun: launch/slurm: _step_signal: Terminating StepId=3198283.0
+slurmstepd: error: Detected 1 oom-kill event(s) in StepId=3198284.0. Some of your processes may have been killed by the cgroup out-of-memory handler.
+srun: error: nid0157: task 0: Out Of Memory
+srun: launch/slurm: _step_signal: Terminating StepId=3198284.0
+slurmstepd: error: Detected 1 oom-kill event(s) in StepId=3198288.0. Some of your processes may have been killed by the cgroup out-of-memory handler.
+srun: error: nid0157: task 0: Out Of Memory
+srun: launch/slurm: _step_signal: Terminating StepId=3198288.0
