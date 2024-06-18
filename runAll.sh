@@ -1,12 +1,12 @@
 #!/bin/bash
 nJobs=1
 beta=5.9
-Nc=3
+Nc=2
 N=32
 T=32
 xiR=2
 hot=0
-nSweeps=1000
+nSweeps=3000
 gFixing=0
 suffix=GRT
 measurements=0
@@ -19,11 +19,11 @@ memory=4G
 
 
 
-for beta in 5.9 6.0 6.1 6.2 6.3
+for beta in 2.30
 do
-for xiR in 1 2 3 4
+for xiR in 2
 do
-make && bash runBatch.sh $nJobs $beta $N $(($xiR*$N)) $xiR $hot $nSweeps $gFixing $suffix $measurements $sweeps_between_meas $((9*$xiR)):00:00 $filepath $Nc $((xiR*2))G
+make && bash runBatch.sh $nJobs $beta $N $(($xiR*$N)) $xiR $hot $nSweeps $gFixing $suffix $measurements $sweeps_between_meas $((12*$xiR)):00:00 $filepath $Nc $((xiR*2))G
 done
 done
 
