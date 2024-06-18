@@ -42,27 +42,18 @@ int main(int argc, char ** argv)
     int sweeps_per_meas = atoi(argv[13]);
 	int Nc = atoi(argv[14]);
 
-	//start the clock
+
 	auto begin = std::chrono::steady_clock::now();
-
-
-	//make lattice object
 	lattice lat = lattice(Nc,N,T,beta,xi_R);
-
-	
-	//read in previously saved config
 	if(hotStart==1){
 		lat.readFile(configname);
 	}
 	lat.update(nSweeps);
-	//get time elapsed for thermalization
 	auto mid = std::chrono::steady_clock::now();
 	
 	
-	//measure data and save to file
-	for(int i = 0; i <nMeasurements; i++){
-		lat.update(sweeps_per_meas);
-			//gauge fix
+
+	for(int i = 1; i <nMeasurements; i++){
 		if(gTol!=0){
 			if(Nc==3){
 				lat.fixCoulombGaugeSubgroups(gTol);
@@ -71,31 +62,26 @@ int main(int argc, char ** argv)
 				lat.fixCoulombGauge(gTol);
 			}
 		}
-		//saveData(dataname+suffix,lat.getGreensiteCorrelator(N));
-		//saveData(dataname+suffix,lat.getSquareLoop(N));
-		for(int j = 1; j <=T/2; j++){ 
-			saveData(dataname+suffix,lat.getAverageTSLoop(N/2,xi_R*j));
-			//saveData(dataname+suffix,lat.getImprovedCorrelator(N/2,j));
-		}
+
+		configname = (string)argv[9]+"/run"+to_string(i+1)+".txt;
+		lat.update(sweeps_per_meas);
+		lat.writeFile(configname);
 	}
-	
-	//save the configuration
-	lat.writeFile(configname);
 
 	auto end = std::chrono::steady_clock::now();
 	
 	if(jobnum>1) return 0;
-	
-	//print some stuff to config file
+
 	std::ofstream infofile;
 	
 	if(hotStart==1){
 		infofile.open(infoname, std::ios::app);
 		} else{
 		infofile.open(infoname,std::ios::out);
-		}
+		}/*
 	infofile <<"Thermalized lattice with "<<nSweeps<<" sweeps in"<<std::chrono::duration_cast<std::chrono::minutes>(mid - begin).count() << " min" <<endl;
-	infofile << "Measurement name:"<<suffix<<". Finished "<<nMeasurements<<" measurements separated by "<<sweeps_per_meas<<" sweeps and gauge fixing to dF<"<<gTol<<" in "<<std::chrono::duration_cast<std::chrono::minutes>(end - mid).count() << " min" <<endl;
+	infofile << "Measurement name:"<<suffix<<". Finished "<<nMeasurements<<" measurements separated by "<<sweeps_per_meas<<" sweeps and gauge fixing to dF<"<<gTol<<" in "<<std::chrono::duration_cast<std::chrono::minutes>(end - mid).count() << " min" <<endl;*/
+	infofile <<"Split into "<<nMeasurements<<" streams separated by "<<sweeps_per_meas<<" sweeps"<<endl;
 	infofile.close(); 
 	 
     return 0;
