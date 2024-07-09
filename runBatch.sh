@@ -19,7 +19,7 @@ cd ${13}
 mkdir -p ./Configs/"$3"^3x"$4"/$2-$5
 mkdir -p ./Data/"$3"^3x"$4"/$2-$5/$9
 configpath="${13}"/Configs/"$3"^3x"$4"/$2-$5
-datapath="${13}"/Data/"$3"^3x"$4"/$2-$5
+datapath="${13}"/Data/"$3"^3x"$4"/$2-$5/$9
 
 cd -
 

@@ -61,6 +61,8 @@ int main(int argc, char ** argv)
 	
 	//measure data and save to file
 	for(int i = 0; i <nMeasurements; i++){
+		vector<vector<double>> dat_pt_list = {};
+
 		lat.update(sweeps_per_meas);
 			//gauge fix
 		if(gTol!=0){
@@ -75,7 +77,10 @@ int main(int argc, char ** argv)
 		//saveData(dataname+suffix,lat.getSquareLoop(N));
 		for(int j = 1; j <=N/2; j++){ 
 			//saveData(dataname+suffix,lat.getAverageTSLoop(N/2,xi_R*j));
-			saveData(dataname+suffix,lat.getImprovedCorrelator(N/2,j));
+			dat_pt_list.push_back(lat.getImprovedCorrelator(N/2,j));
+		}
+		for(vector<double> dl : dat_pt_list){
+		saveData(dataname+suffix,dl);		
 		}
 	}
 	

@@ -9,8 +9,8 @@ hot=1
 nSweeps=0
 gFixing=1e-7
 suffix=GRT
-measurements=3
-sweeps_between_meas=20
+measurements=10
+sweeps_between_meas=200
 runtime=24:00:00
 filepath=/N/project/Lattice-C/"SU("$Nc")"
 memory=4G
@@ -19,11 +19,11 @@ memory=4G
 
 
 
-for beta in 2.70 2.75
+for beta in 2.65 #2.50
 do
-for xiR in 3 4
+for xiR in 8 #7 8
 do
-make && bash runBatch.sh $nJobs $beta $N $(($xiR*$N)) $xiR $hot $nSweeps $gFixing $suffix $measurements $sweeps_between_meas $((6*$xiR)):00:00 $filepath $Nc $((xiR*1))G
+make && bash runBatch.sh $nJobs $beta $N $(($xiR*$N)) $xiR $hot $nSweeps $gFixing $suffix $measurements $sweeps_between_meas $((4*$xiR)):00:00 $filepath $Nc $(($xiR/2))G
 done
 done
 
