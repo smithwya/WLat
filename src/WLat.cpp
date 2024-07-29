@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <iomanip>
 #include <Eigen/Dense>
 #include <fstream>
 #include "lattice.h"
@@ -10,6 +11,7 @@ using namespace std;
 
 void saveData(string dataname, vector<double> v) {
     std::ofstream datfile(dataname,ios::app);
+	datfile<<std::fixed<<setprecision(std::numeric_limits<double>::digits10 + 1)<<endl;
     for (double x : v) {
         datfile << x << " ";
     }
@@ -41,6 +43,7 @@ int main(int argc, char ** argv)
     int nMeasurements = atoi(argv[12]);
     int sweeps_per_meas = atoi(argv[13]);
 	int Nc = atoi(argv[14]);
+	
 
 	//start the clock
 	auto begin = std::chrono::steady_clock::now();

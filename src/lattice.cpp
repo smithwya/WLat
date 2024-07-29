@@ -4,6 +4,7 @@
 #include <random>
 #include <chrono>
 #include <ctime>
+#include <iomanip>
 
 using namespace std;
 using Eigen::MatrixXcd;
@@ -183,7 +184,7 @@ void lattice::readFile(string filename) {
 void lattice::writeFile(string filename)
 {
 	std::ofstream outfile(filename);
-
+	outfile<<std::fixed<<setprecision(std::numeric_limits<double>::digits10 + 1)<<endl;
 
 
 	for (int i = 0; i < T; i++) {
