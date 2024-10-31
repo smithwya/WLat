@@ -24,11 +24,11 @@ datapath="${13}"/Data/"$3"^3x"$4"/$2-$5/$9
 cd -
 
 #submits jobs
-for ((i=1; i<= $1; i++))
-do
+#for ((i=1; i<= $1; i++))
+#do
 #submit to carbonate:
-sbatch --time=${12} --mem=${15} submit.script "$i" $2 $3 $4 $5 $6 $7 $8 $configpath $datapath $9 ${10} ${11} ${14}
+sbatch --time=${12} --mem=${15} submit.script $1 $2 $3 $4 $5 $6 $7 $8 $configpath $datapath $9 ${10} ${11} ${14}
 
 #for testing
 #./bin/WLat $9 $2 $3 $4 $5 $6 $7 $8 $configpath $datapath $9 ${10} ${11} ${14}
-done
+#done
