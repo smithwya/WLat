@@ -30,100 +30,116 @@ int main(int argc, char ** argv)
 {
 
     //takes in arguments from command line
-    int jobnum = atoi(argv[1]);
-    double beta = atof(argv[2]);
-    string betaname = argv[2];
-    int N = atoi(argv[3]);
-    int T = atoi(argv[4]);
-    double xi_R = atof(argv[5]);
-    int hotStart = atoi(argv[6]);
-    int nSweeps = atoi(argv[7]);
-    double gTol = atof(argv[8]);
-    string configname = (string)argv[9]+"/run"+to_string(jobnum)+".txt";
-    string dataname = (string)argv[10]+"/run"+to_string(jobnum);
-    string infoname = (string)argv[9]+"/config.txt";
-    string suffix = argv[11];
-    int nMeasurements = atoi(argv[12]);
-    int sweeps_per_meas = atoi(argv[13]);
-    int Nc = atoi(argv[14]);
+    string cnfg = argv[1];
+    string dat = argv[2];
+    int cnfgStart = atoi(argv[3]);
+    int cnfgEnd = atoi(argv[4]);
+    int cnfgInc = atoi(argv[5]);
+    
+    int Nc = atoi(argv[6]);
+    double beta = atof(argv[7]);
+    int L = atoi(argv[8]);
+    int T = atoi(argv[9]);
+    double xi_R = atof(argv[10]);
+    
+    bool multiGen = atoi(argv[11]);
+    int nTherm = atoi(argv[12]);
+    double gTol = atof(argv[13]);
+	bool measure = atoi(argv[14]);
+	int Rmax = atoi(argv[15]);
+	int Tmax = atoi(argv[16]);
 
-	cout<<"[INIT] Starting job "<<jobnum<<endl;
+	cout<<"[WLAT] Initializing"<<endl;
+	cout<<"Nc = "<<Nc<<endl;
 	cout<<"Beta = "<<beta<<endl;
-	cout<<"L = "<<N<<endl;
+	cout<<"L = "<<L<<endl;
 	cout<<"T = "<<T<<endl;
 	cout<<"xi_R = "<<xi_R<<endl;
-
-	//start the clock
+	
 	auto t_s = high_resolution_clock::now();
-
-	//make lattice object
-	lattice lat = lattice(Nc,N,T,beta,xi_R);
+	lattice lat = lattice(Nc,L,T,beta,xi_R);
 	auto t_e = high_resolution_clock::now();
-	cout<<"[INIT] Lattice initialized (" << duration_cast<seconds>(t_e-t_s).count()<< "s)\n";
-	//read in previously saved config
-	if(hotStart==1){
-		cout<<"[IO] Loading config: "<<configname<<endl;
+
+	cout<<"[WLAT] Lattice object initialized ("<< duration_cast<seconds>(t_e-t_s).count()<<"s)\n";
+	
+	if(multiGen){
+		cout<<"[WLAT] Generating initial configurations ONLY"<<endl;
+		 
+		cout<<"[UPDATE] Thermalizing initial configuration from Cold Start with "<<nTherm<<" heatbath sweeps";
+		t_s = high_resolution_clock::now();
+		lat.ColdStart();
+		lat.update(nTherm);
+		t_e = high_resolution_clock::now();
+		cout<<" ...done (" << duration_cast<seconds>(t_e-t_s).count()<<"s)\n";
+		
+		cout<<"[UPDATE] Generating configurations in range ["<<cnfgStart<<", "<<cnfgEnd<<", "<<cnfgInc<<"] ";
+		
+		for(int i = cnfgStart; i <=cnfgEnd; i=i+cnfgInc){
+		
+			string fname=cnfg+"."+std::to_string(i);
+			lat.update(cnfgInc);
+			lat.writeFile(fname);
+			cout<<"     Saving configuration "<<fname<<endl;
+			
+		}
+		
+		t_e = high_resolution_clock::now();
+		cout<<" ...done (" << duration_cast<seconds>(t_e-t_s).count()<<"s)\n";
+		cout<<"[WLAT] Exiting"<<endl;
+		return 0;
+	}
+	
+	
+	
+	for(int i = cnfgStart; i <=cnfgEnd; i=i+cnfgInc){
+	
+		string fname=cnfg+"."+std::to_string(i);
+		
+		
 		t_s=high_resolution_clock::now();
-		lat.readFile(configname);
+		lat.readFile(fname);
 		t_e=high_resolution_clock::now();
-		cout<<"...done ("<< duration_cast<seconds>(t_e-t_s).count()<<"s)\n";
-	}
-	if(nSweeps>0){
-		cout<<"[UPDATE] Thermalizing "<<nSweeps<<" times...";
-		t_s = high_resolution_clock::now();
-		lat.update(nSweeps);
-		t_e = high_resolution_clock::now();
-		cout<<"done (" << duration_cast<seconds>(t_e-t_s).count()<<"s)\n";
-		t_s = high_resolution_clock::now();
-
-		cout<<"[IO] Saving thermalized  lattice to "<<configname<<endl;
-		lat.writeFile(configname);
-		t_e = high_resolution_clock::now();
-		cout<<"done (" << duration_cast<seconds>(t_e-t_s).count()<<"s)\n";
-	}
-	cout<<"[MEASURE] Performing "<<nMeasurements<<" measurements of G(R,T)\n";
-	//measure data and save to file
-
-	for(int i = 1; i <= nMeasurements; i++){
-		cout<<"[MEASURE] Beginning measurement #"<<i<<endl;
-		vector<vector<double>> dat_pt_list = {};
-		t_s = high_resolution_clock::now();
-		lat.update(sweeps_per_meas);
-		t_e = high_resolution_clock::now();
-		cout<<"Performed "<< sweeps_per_meas<<" updates (" << duration_cast<seconds>(t_e-t_s).count()<<"s)\n";
-
-		if(gTol!=0){
+		cout<<" ...done (" << duration_cast<seconds>(t_e-t_s).count()<<"s)\n";
+		if(gTol != 0){
+			cout<<"[GFIX] Coulomb Gauge fixing to df<"<<gTol;
+			
 			t_s = high_resolution_clock::now();
-			cout<<"Gauge fixing to dF<"<<gTol<<"...";
+		
 			if(Nc==3){
 				lat.fixCoulombGaugeSubgroups(gTol);
 			}
 			if(Nc==2){
 				lat.fixCoulombGauge(gTol);
 			}
+
+			lat.writeFile(fname);
 			t_e = high_resolution_clock::now();
-			cout<<"done (" << duration_cast<seconds>(t_e-t_s).count()<<"s)\n";
+			cout<<" ...done (" << duration_cast<seconds>(t_e-t_s).count()<<"s)\n";
 		}
-		t_s = high_resolution_clock::now();
-		cout<<"Measuring G(R,T) for R,T<="<<N/2<<"...";
-		for(int j = 1; j <=N/2; j++){
-			//saveData(dataname+suffix,lat.getAverageTSLoop(N/2,xi_R*j));
-			dat_pt_list.push_back(lat.getImprovedCorrelator(N/2,j));
+		
+		
+		if(measure){
+		cout<<"[MEASURE] Measuring G(R,T) with R_max = "<<Rmax<<" T_max="<<Tmax;
+		
+			vector<vector<double> > dat_pt_list = {};
+			
+			t_s = high_resolution_clock::now();
+			for(int j = 1; j <=Tmax; j++){
+				dat_pt_list.push_back(lat.getImprovedCorrelator(Rmax,j));
+			}
+			t_e = high_resolution_clock::now();
+			
+			cout<<" ...done (" << duration_cast<seconds>(t_e-t_s).count()<<"s)\n";
+
+			for(vector<double> dl : dat_pt_list){
+				saveData(dat,dl);
+			}
+			cout<<"[MEASURE] Data saved to "<<dat<<endl;
+
 		}
-		t_e = high_resolution_clock::now();
-		cout<<"done (" << duration_cast<seconds>(t_e-t_s).count()<<"s)\n";
-
-		for(vector<double> dl : dat_pt_list){
-		saveData(dataname+suffix,dl);
-		}
-
-		configname=(string)argv[9]+"/run"+to_string(i+jobnum)+".txt";
-		t_s = high_resolution_clock::now();
-		cout<<"Saving configuration to "<<configname<<endl;
-		lat.writeFile(configname);
-		cout<<"done (" << duration_cast<seconds>(t_e-t_s).count()<<"s)\n";
-
+	
 	}
+		
 
     return 0;
 

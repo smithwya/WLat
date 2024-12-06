@@ -3,6 +3,7 @@
 #include <complex>
 #include <vector>
 #include <Eigen/Dense>
+#include <functional>
 using namespace std;
 using Eigen::MatrixXcd;
 using Eigen::VectorXcd;
@@ -59,7 +60,7 @@ private:
 	double beta;
 	double xi_R;
 	double xi_0;
-	vector<vector<vector<vector<vector<MatrixXcd>>>>> configuration;
+	vector<vector<vector<vector<vector<MatrixXcd> > > > > configuration;
 	void transformLat(function<MatrixXcd(position,int)>);
 	MatrixXcd genStaple(position n, int mu);
 	MatrixXcd genLinkSU2(MatrixXcd A);

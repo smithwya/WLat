@@ -5,6 +5,7 @@
 #include <chrono>
 #include <ctime>
 #include <iomanip>
+#include <functional>
 
 using namespace std;
 using Eigen::MatrixXcd;
@@ -132,10 +133,10 @@ void lattice::ColdStart()
 	MatrixXcd U = MatrixXcd::Identity(Nc, Nc);
 
 	vector<MatrixXcd> directions(4, U);
-	vector<vector<MatrixXcd>> Z(N, directions);
-	vector<vector<vector<MatrixXcd>>> Y(N, Z);
-	vector<vector<vector<vector<MatrixXcd>>>> X(N, Y);
-	vector<vector<vector<vector<vector<MatrixXcd>>>>> Ts(T, X);
+	vector<vector<MatrixXcd> > Z(N, directions);
+	vector<vector<vector<MatrixXcd> > > Y(N, Z);
+	vector<vector<vector<vector<MatrixXcd> > > > X(N, Y);
+	vector<vector<vector<vector<vector<MatrixXcd> > > > > Ts(T, X);
 	configuration = Ts;
 	return;
 }
@@ -143,8 +144,15 @@ void lattice::ColdStart()
 //reads in a lattice configuration from a text file
 void lattice::readFile(string filename) {
 	
-	std::fstream infile(filename);
-		
+	std::ifstream infile(filename);
+	
+	if(!infile.good()){
+	cout<<"[IO] Configuration not detected. Initiating Cold Start at "<<filename;
+	ColdStart();
+	return;
+	}
+	
+	cout<<"[IO] Reading configuration "<<filename;
 	
 	auto func2 = [&](position n, int mu) {
 		comp a, b;
@@ -184,7 +192,7 @@ void lattice::readFile(string filename) {
 void lattice::writeFile(string filename)
 {
 	std::ofstream outfile(filename);
-	outfile<<std::fixed<<setprecision(std::numeric_limits<double>::digits10 + 1)<<endl;
+	outfile<<std::fixed<<setprecision(std::numeric_limits<double>::digits10 + 1);
 
 
 	for (int i = 0; i < T; i++) {

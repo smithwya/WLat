@@ -1,9 +1,10 @@
+
 TARGET = WLat
 # compilers
 CXX = g++
 
 #compiling flags
-CPPFLAGS := $(STDINCDIR) -I/N/u/smithwya/BigRed200/install/eigen
+CPPFLAGS := -std=c++11 -I/opt/homebrew/Cellar/eigen/3.4.0_1/include/eigen3
 CPPFLAGS += -O3
 CPPFLAGS += -mtune=native
 CPPFLAGS += -march=native
