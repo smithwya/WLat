@@ -63,19 +63,22 @@ int main(int argc, char ** argv)
 	cout<<"[WLAT] Lattice object initialized ("<< duration_cast<seconds>(t_e-t_s).count()<<"s)\n";
 	
 	if(multiGen){
-		cout<<"[WLAT] Generating initial configurations ONLY"<<endl;
-		 
-		cout<<"[UPDATE] Thermalizing initial configuration from Cold Start with "<<nTherm<<" heatbath sweeps";
-		t_s = high_resolution_clock::now();
-		lat.ColdStart();
-		lat.update(nTherm);
-		t_e = high_resolution_clock::now();
-		cout<<" ...done (" << duration_cast<seconds>(t_e-t_s).count()<<"s)\n";
+		cout<<"[WLAT] Generating configurations"<<endl;
 		
-		cout<<"[UPDATE] Generating configurations in range ["<<cnfgStart<<", "<<cnfgEnd<<", "<<cnfgInc<<"] ";
+		lat.readFile(cnfg+"."+std::to_string(cnfgStart));
 		
-		for(int i = cnfgStart; i <=cnfgEnd; i=i+cnfgInc){
+		if(nTherm>0){
+			cout<<"[UPDATE] Thermalizing start configuration with "<<nTherm<<" heatbath sweeps";
+			t_s = high_resolution_clock::now();
+			lat.update(nTherm);
+			t_e = high_resolution_clock::now();
+			cout<<" ...done (" << duration_cast<seconds>(t_e-t_s).count()<<"s)\n";
+			lat.writeFile(cnfg+"."+std::to_string(cnfgStart));
+			cout<<"     Saving configuration "<<cnfg+"."+std::to_string(cnfgStart)<<endl;
+		}
+		cout<<"[UPDATE] Generating configurations in range ["<<cnfgStart<<", "<<cnfgEnd<<", "<<cnfgInc<<"] "<<endl;
 		
+		for(int i = cnfgStart+cnfgInc; i <=cnfgEnd; i=i+cnfgInc){
 			string fname=cnfg+"."+std::to_string(i);
 			lat.update(cnfgInc);
 			lat.writeFile(fname);
