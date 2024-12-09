@@ -6,14 +6,14 @@ N=56
 T=56
 xiR=1
 hot=0
-nSweeps=500
+nSweeps=350
 gFixing=0
 suffix=GRT
 measurements=0
 sweeps_between_meas=20
 runtime=24:00:00
 filepath=/N/project/Lattice-C/SU"$Nc"
-memory=8G
+memory=18G
 
 #makes 'Configs' and 'Data' folders in filepath location
 

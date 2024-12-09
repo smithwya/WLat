@@ -1,34 +1,27 @@
 #!/bin/bash
-# $1 number of jobs to submit
-# $2 beta
-# $3 N (lattice spatial extent)
-# $4 T (lattice temporal extent)
-# $5 xiR
-# $6 1=hot, 0=cold (continue thermalizing current file or start over)
-# $7 number of sweeps to perform
-# $8 tolerance of gauge-fixing (dF<= tol)
-# $9 suffix (name to add to end of datafiles)
-# $10 number of measurements
-# $11 sweeps between each measurement
-# $12 runtime
-# $13 filepath
-# $14 Nc
-# $15 Memory needed
+# $1 cnfg filepath
+# $2 data filepath
+# $3 cnfg start num
+# $4 cnfg end num
+# $5 cnfg increment
+# $6 N colors
+# $7 beta
+# $8 L
+# $9 T
+# $10 xi_R
+# $11 (bool) generating initial cnfgs
+# $12 number of thermalization sweeps
+# $14 dF for coulomb gauge
+# $15 (bool) isMeasuring
+# $16 R_max
+# $17 T_max
+# $18 time limit
+# $19 memory req
 #makes the folders for the configs and data
-cd ${13}
-mkdir -p ./Configs/"$3"^3x"$4"/$2-$5
-mkdir -p ./Data/"$3"^3x"$4"/$2-$5/$9
-configpath="${13}"/Configs/"$3"^3x"$4"/$2-$5
-datapath="${13}"/Data/"$3"^3x"$4"/$2-$5/$9
 
-cd -
+cnfgpath=$1/run
+datpath=$2/run
 
-#submits jobs
-#for ((i=1; i<= $1; i++))
-#do
-#submit to carbonate:
-sbatch --time=${12} --mem=${15} submit.script $1 $2 $3 $4 $5 $6 $7 $8 $configpath $datapath $9 ${10} ${11} ${14}
+sbatch --time=${19} --mem=${18} submit.script $cnfgpath $datpath $3 $4 $5 $6 $7 $ 8 $9 ${10} ${11} ${12} ${13} ${14} ${15} ${16} ${17}
 
-#for testing
-#./bin/WLat $9 $2 $3 $4 $5 $6 $7 $8 $configpath $datapath $9 ${10} ${11} ${14}
-#done
+

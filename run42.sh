@@ -1,19 +1,19 @@
 #!/bin/bash
-nJobs=1
+nJobs=2
 beta=6.33676665
 Nc=3
 N=42
 T=42
 xiR=1
-hot=0
-nSweeps=1500
-gFixing=0
+hot=1
+nSweeps=0
+gFixing=1e-7
 suffix=GRT
-measurements=0
+measurements=2
 sweeps_between_meas=20
-runtime=24:00:00
+runtime=48:00:00
 filepath=/N/project/Lattice-C/SU"$Nc"
-memory=16G
+memory=6G
 
 #makes 'Configs' and 'Data' folders in filepath location
 
