@@ -1,8 +1,8 @@
 #!/bin/bash
 Nc=3
-beta=6.336766
-L=28
-T=28
+beta=6.105783
+L=20
+T=20
 xiR=1
 
 multigen=1
@@ -19,8 +19,8 @@ startcnfg=3000
 endcnfg=7000
 inc=20
 
-runtime=32:00:00
-memory=4G
+runtime=24:00:00
+memory=2G
 
 
 mkdir -p $filepath
