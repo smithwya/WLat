@@ -147,8 +147,9 @@ void lattice::readFile(string filename) {
 	std::ifstream infile(filename);
 	
 	if(!infile.good()){
-	cout<<"[IO] Configuration not detected. Initiating Cold Start at "<<filename<<endl;
+	cout<<"[IO] Configuration not detected. Iniating Cold Start at file "<<filename;
 	ColdStart();
+	cout<<"..done"<<endl;
 	return;
 	}
 	

@@ -2,8 +2,6 @@
 
 #SBATCH -J "WLat"
 #SBATCH -p general
-#SBATCH -o Logs/slurm-%j.out
-#SBATCH -e Logs/slurm-%j.err
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=smithwya@iu.edu
 #SBATCH --nodes=1
